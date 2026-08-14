@@ -21,6 +21,37 @@ const STORAGE_KEY = "MOMENTUM_APP_DATA_V1";
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+function mergeAppData(savedData: any, defaultData: AppData): AppData {
+  if (!savedData || typeof savedData !== 'object') return defaultData;
+
+  const mergedProgress = { ...defaultData.progress };
+  if (savedData.progress && typeof savedData.progress === 'object') {
+    Object.keys(savedData.progress).forEach((key) => {
+      if (mergedProgress[key]) {
+        mergedProgress[key] = {
+          ...mergedProgress[key],
+          ...savedData.progress[key],
+          topics: Array.isArray(savedData.progress[key].topics) 
+            ? savedData.progress[key].topics 
+            : mergedProgress[key].topics,
+        };
+      } else {
+        mergedProgress[key] = savedData.progress[key];
+      }
+    });
+  }
+
+  return {
+    ...defaultData,
+    ...savedData,
+    progress: mergedProgress,
+    weeks: Array.isArray(savedData.weeks) && savedData.weeks.length > 0 ? savedData.weeks : defaultData.weeks,
+    backendRoadmap: Array.isArray(savedData.backendRoadmap) && savedData.backendRoadmap.length > 0 ? savedData.backendRoadmap : defaultData.backendRoadmap,
+    schedule: Array.isArray(savedData.schedule) && savedData.schedule.length > 0 ? savedData.schedule : defaultData.schedule,
+    academics: savedData.academics || defaultData.academics,
+  };
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(defaultData);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -34,9 +65,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.progress && parsed.weeks) {
-          setData(parsed);
-        }
+        const merged = mergeAppData(parsed, defaultData);
+        setData(merged);
       }
     } catch (e) {
       console.warn("Could not load from localStorage, using default data.", e);

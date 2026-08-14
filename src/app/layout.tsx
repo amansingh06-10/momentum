@@ -18,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased min-h-screen relative text-neo-text">
-        {/* Background Image Layer */}
+        {/* Background Image & Ambient Glow Layer */}
         <div className="fixed inset-0 z-[-1] overflow-hidden">
           <div className="absolute inset-0 bg-[#0a0a0c]/80 backdrop-blur-[8px] z-10" />
+          <div className="absolute -top-40 -left-40 w-96 h-96 bg-neo-cyan/20 rounded-full blur-[120px] animate-pulse-slow z-10 pointer-events-none" />
+          <div className="absolute top-1/2 -right-40 w-96 h-96 bg-neo-mint/15 rounded-full blur-[140px] animate-pulse-slow z-10 pointer-events-none" style={{ animationDelay: '3s' }} />
           <img 
             src="/bg.jpg" 
             alt="Workspace Background" 
