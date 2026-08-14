@@ -1,42 +1,46 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const systemPrompt = `You are an expert AI assistant and pair programming partner for Aman. You can converse on ANY topic naturally, thoroughly, and intelligently in Markdown (e.g. explaining code, debugging algorithms, computer science, DSA concepts, math, backend design, or general chat).
+const systemPrompt = `You are the AI core for Aman's "Momentum" Developer Tracker. Your ONLY responsibility is evaluating logs, generating progress summaries, and modifying system data accurately based on user input. Do not add conversational fluff.
 
-CONTEXT (Aman's Momentum Tracker):
-Aman is a 3rd Sem CSE student learning DSA (Striver's A2Z sheet) and Backend Engineering (Node.js, Express, MongoDB, PostgreSQL).
-Target: 190/474 DSA problems solved.
+1. MARKING & RATING SYSTEM (1 to 10):
+- Context: Aman is a CSE student (3rd Sem) learning DSA (Striver's A2Z Sheet) & Backend (Node.js, Express, MongoDB, PostgreSQL).
+- Rules: 2 freeze days allowed per month. Weeks run Wednesday to Tuesday.
+- COLLEGE DAYS (Mon–Fri):
+  • 10/10 — 1+ DSA problem + backend topic covered
+  • 9/10  — 1 DSA problem only, good quality
+  • 8/10  — Revision only or light session
+  • 7/10  — Minimal effort
+- WEEKEND DAYS (Sat–Sun) — STRICT:
+  • 10/10 — 2+ DSA problems + backend work
+  • 9/10  — 1-2 DSA + backend topic
+  • 8/10  — 1 DSA or backend only
+  • 7/10  — Light session, below expectations
+- Factors: Problems solved & difficulty, topics learned, backend output, hours, mood/energy.
 
-INSTRUCTIONS:
-1. Provide a direct, helpful, and articulate answer to the user's question or greeting using Markdown.
-2. ONLY IF the user explicitly logs a study session, updates DSA progress, modifies backend roadmap items, or changes overall target goals, append a JSON block at the VERY END of your response inside a \`\`\`json block:
+2. SUMMARY CONTEXT:
+- When asked for progress, weekly summaries, or stats, analyze CURRENT TRACKER STATE and provide exact metrics: ratings, average, total study hours, rest/freeze days used, DSA achievements, backend milestones.
+
+3. DATA MODIFICATION / UPDATION / DELETION / ADDITION:
+- When user logs a session, marks DSA problems done/in-progress, updates backend roadmap phases, changes target goals/dates, or edits/deletes past logs, you MUST return stateMutations inside a \`\`\`json block at the end of your response.
+
+OUTPUT FORMAT:
+Provide a clear, concise Markdown message. If data updates/deletions/additions are required, append:
 
 \`\`\`json
 {
   "stateMutations": {
-    "addDayLog": {
-      "date": "Aug 10",
-      "day": "Mon",
-      "topic": "DSA & Backend",
-      "rating": 9,
-      "mood": 4,
-      "hours": 3
-    },
-    "updateProgress": [
-      { "sectionKey": "strings", "topicId": "isomorphic-strings", "status": "done", "confidence": 9 }
-    ],
-    "updateBackend": [
-      { "id": "phase-1", "status": "done" }
-    ],
-    "updateOverview": {
-      "targetGoal": 200,
-      "targetDate": "2026-08-15"
-    }
+    "addDayLog": { "date": "Aug 10", "day": "Mon", "topic": "...", "rating": 9, "mood": 4, "hours": 3 },
+    "addNewWeek": { "label": "Week X" },
+    "updateProgress": [{ "sectionKey": "...", "topicId": "...", "status": "done" }],
+    "updateBackend": [{ "id": "...", "status": "done" }],
+    "updateOverview": { "targetGoal": 190, "targetDate": "2026-08-15" },
+    "updateLog": [{ "date": "Aug 10", "rating": 9, "hours": 3 }]
   }
 }
 \`\`\`
 
-If NO tracker state update is requested, do NOT output any JSON block. Simply answer the user's question directly and naturally.`;
+If no state mutations are required, omit the json block.`;
 
 const GEMINI_MODELS = [
   "gemini-3.5-flash",
@@ -62,18 +66,16 @@ async function callGemini(systemInstruction: string, userMessage: string, apiKey
       lastError = e;
     }
   }
-  throw lastError || new Error("Gemini models unavailable");
+  throw lastError || new Error("Gemini API connection issue.");
 }
 
 export async function POST(req: Request) {
   let prompt: string = "";
-  let model: string = "";
   let currentData: any = null;
 
   try {
     const body = await req.json();
     prompt = body.prompt;
-    model = body.model;
     currentData = body.currentData;
 
     if (!prompt) {
@@ -85,16 +87,15 @@ export async function POST(req: Request) {
     const userMessage = `CURRENT TRACKER STATE:
 ${JSON.stringify(currentData, null, 2)}
 
-USER QUESTION / INPUT: "${prompt}"`;
+USER REQUEST: "${prompt}"`;
 
     let rawResponseText = "";
 
     try {
       rawResponseText = await callGemini(systemPrompt, userMessage, apiKey);
     } catch (apiErr: any) {
-      console.error("Gemini API Error:", apiErr);
       return NextResponse.json({
-        message: `I encountered an issue connecting to the AI model. Details: ${apiErr?.message || "Service Busy"}. Please try sending your prompt again.`,
+        message: `API Error: ${apiErr?.message || "Could not connect to AI"}. Please try again.`,
         stateMutations: null
       });
     }
@@ -102,14 +103,14 @@ USER QUESTION / INPUT: "${prompt}"`;
     let displayMessage = rawResponseText;
     let stateMutations: any = null;
 
-    // Check if JSON block exists at the end of the text
+    // Extract JSON block if present
     const jsonMatch = rawResponseText.match(/```json\s*([\s\S]*?)\s*```/);
     if (jsonMatch && jsonMatch[1]) {
       try {
         const parsed = JSON.parse(jsonMatch[1]);
         if (parsed.stateMutations) {
           stateMutations = parsed.stateMutations;
-        } else if (parsed.addDayLog || parsed.updateProgress || parsed.updateOverview) {
+        } else if (parsed.addDayLog || parsed.updateProgress || parsed.updateOverview || parsed.updateLog) {
           stateMutations = parsed;
         }
         displayMessage = rawResponseText.replace(/```json\s*[\s\S]*?\s*```/, '').trim();
@@ -117,7 +118,6 @@ USER QUESTION / INPUT: "${prompt}"`;
         // ignore parse error
       }
     } else {
-      // If output was purely JSON
       const firstBrace = rawResponseText.indexOf('{');
       const lastBrace = rawResponseText.lastIndexOf('}');
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
@@ -127,12 +127,12 @@ USER QUESTION / INPUT: "${prompt}"`;
           if (parsed.message) displayMessage = parsed.message;
           if (parsed.stateMutations) stateMutations = parsed.stateMutations;
         } catch (e) {
-          // treat as plain text
+          // ignore
         }
       }
     }
 
-    // Apply state mutations if present
+    // Perform state mutations
     if (stateMutations) {
       try {
         let updatedData = { ...currentData };
@@ -214,7 +214,7 @@ USER QUESTION / INPUT: "${prompt}"`;
         }
         stateMutations.updatedData = updatedData;
       } catch (err) {
-        console.error("Error applying state mutations:", err);
+        console.error("Error mutating state:", err);
       }
     }
 
@@ -225,7 +225,7 @@ USER QUESTION / INPUT: "${prompt}"`;
 
   } catch (error: any) {
     return NextResponse.json({
-      message: `An unexpected error occurred: ${error.message}`,
+      message: `Error processing request: ${error.message}`,
       stateMutations: null
     });
   }
