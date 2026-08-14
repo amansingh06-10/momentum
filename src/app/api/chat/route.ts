@@ -81,7 +81,7 @@ Remember: Analyze the CURRENT SYSTEM STATE to answer questions about previous lo
     if (model === 'gemini') {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
       const aiModel = genAI.getGenerativeModel({ 
-        model: "gemini-flash-latest",
+        model: "gemini-3.6-flash",
         systemInstruction: systemPrompt 
       });
       const result = await aiModel.generateContent(userMessage);
@@ -240,7 +240,7 @@ Remember: Analyze the CURRENT SYSTEM STATE to answer questions about previous lo
     try {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
       const aiModel = genAI.getGenerativeModel({ 
-        model: "gemini-flash-latest",
+        model: "gemini-3.6-flash",
         systemInstruction: systemPrompt 
       });
       const result = await aiModel.generateContent(userMessage);
