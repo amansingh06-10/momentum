@@ -46,7 +46,8 @@ If he provides the log, determine the rating based on the rules. Update the stat
     },
     "markTopicsDone": [
       { "sectionKey": "strings", "topicId": "isomorphic-strings" }
-    ]
+    ],
+    "replaceFullState": null // ONLY use this to output an entire modified JSON state object if you are explicitly asked to edit, delete, or rewrite past data.
   }
 }
 
@@ -176,41 +177,47 @@ Remember: Analyze the CURRENT SYSTEM STATE to answer questions about previous lo
 
     try {
       // Perform state mutation on currentData
-      const updatedData = { ...currentData };
+      let updatedData = { ...currentData };
       if (parsedData.stateMutations) {
-        const { addDayLog, markTopicsDone, addNewWeek } = parsedData.stateMutations;
         
-        // Add new week if requested
-        if (addNewWeek && updatedData.weeks) {
-          updatedData.weeks.unshift({
-            label: addNewWeek.label || "New Week",
-            average: 0,
-            days: []
-          });
-        }
-        
-        // Add entry to current week
-        if (addDayLog && updatedData.weeks && updatedData.weeks.length > 0) {
-          updatedData.weeks[0].days.push(addDayLog);
+        // Omnipotent override for modifying past data
+        if (parsedData.stateMutations.replaceFullState) {
+          updatedData = parsedData.stateMutations.replaceFullState;
+        } else {
+          const { addDayLog, markTopicsDone, addNewWeek } = parsedData.stateMutations;
           
-          // Recalculate average
-          const weekDays = updatedData.weeks[0].days.filter((d: any) => d.rating !== null);
-          const sum = weekDays.reduce((a: number, d: any) => a + d.rating, 0);
-          updatedData.weeks[0].average = weekDays.length > 0 ? Number((sum / weekDays.length).toFixed(1)) : 0;
-        }
+          // Add new week if requested
+          if (addNewWeek && updatedData.weeks) {
+            updatedData.weeks.unshift({
+              label: addNewWeek.label || "New Week",
+              average: 0,
+              days: []
+            });
+          }
+          
+          // Add entry to current week
+          if (addDayLog && updatedData.weeks && updatedData.weeks.length > 0) {
+            updatedData.weeks[0].days.push(addDayLog);
+            
+            // Recalculate average
+            const weekDays = updatedData.weeks[0].days.filter((d: any) => d.rating !== null);
+            const sum = weekDays.reduce((a: number, d: any) => a + d.rating, 0);
+            updatedData.weeks[0].average = weekDays.length > 0 ? Number((sum / weekDays.length).toFixed(1)) : 0;
+          }
 
-        // Mark topics as done
-        if (markTopicsDone && markTopicsDone.length > 0) {
-          markTopicsDone.forEach((item: any) => {
-             const section = updatedData.progress[item.sectionKey];
-             if (section) {
-                const topic = section.topics.find((t: any) => t.id === item.topicId);
-                if (topic) {
-                   topic.status = 'done';
-                   topic.confidence = Math.max(8, topic.confidence || 0);
-                }
-             }
-          });
+          // Mark topics as done
+          if (markTopicsDone && markTopicsDone.length > 0) {
+            markTopicsDone.forEach((item: any) => {
+               const section = updatedData.progress[item.sectionKey];
+               if (section) {
+                  const topic = section.topics.find((t: any) => t.id === item.topicId);
+                  if (topic) {
+                     topic.status = 'done';
+                     topic.confidence = Math.max(8, topic.confidence || 0);
+                  }
+               }
+            });
+          }
         }
         
         parsedData.stateMutations.updatedData = updatedData;
@@ -250,35 +257,39 @@ Remember: Analyze the CURRENT SYSTEM STATE to answer questions about previous lo
         parsedData = { message: fallbackText };
       }
       
-      const updatedData = { ...currentData };
+      let updatedData = { ...currentData };
       if (parsedData.stateMutations) {
-        const { addDayLog, markTopicsDone, addNewWeek } = parsedData.stateMutations;
-        
-        if (addNewWeek && updatedData.weeks) {
-          updatedData.weeks.unshift({
-            label: addNewWeek.label || "New Week",
-            average: 0,
-            days: []
-          });
-        }
-        
-        if (addDayLog && updatedData.weeks && updatedData.weeks.length > 0) {
-          updatedData.weeks[0].days.push(addDayLog);
-          const weekDays = updatedData.weeks[0].days.filter((d: any) => d.rating !== null);
-          const sum = weekDays.reduce((a: number, d: any) => a + d.rating, 0);
-          updatedData.weeks[0].average = weekDays.length > 0 ? Number((sum / weekDays.length).toFixed(1)) : 0;
-        }
-        if (markTopicsDone && markTopicsDone.length > 0) {
-          markTopicsDone.forEach((item: any) => {
-             const section = updatedData.progress[item.sectionKey];
-             if (section) {
-                const topic = section.topics.find((t: any) => t.id === item.topicId);
-                if (topic) {
-                   topic.status = 'done';
-                   topic.confidence = Math.max(8, topic.confidence || 0);
-                }
-             }
-          });
+        if (parsedData.stateMutations.replaceFullState) {
+          updatedData = parsedData.stateMutations.replaceFullState;
+        } else {
+          const { addDayLog, markTopicsDone, addNewWeek } = parsedData.stateMutations;
+          
+          if (addNewWeek && updatedData.weeks) {
+            updatedData.weeks.unshift({
+              label: addNewWeek.label || "New Week",
+              average: 0,
+              days: []
+            });
+          }
+          
+          if (addDayLog && updatedData.weeks && updatedData.weeks.length > 0) {
+            updatedData.weeks[0].days.push(addDayLog);
+            const weekDays = updatedData.weeks[0].days.filter((d: any) => d.rating !== null);
+            const sum = weekDays.reduce((a: number, d: any) => a + d.rating, 0);
+            updatedData.weeks[0].average = weekDays.length > 0 ? Number((sum / weekDays.length).toFixed(1)) : 0;
+          }
+          if (markTopicsDone && markTopicsDone.length > 0) {
+            markTopicsDone.forEach((item: any) => {
+               const section = updatedData.progress[item.sectionKey];
+               if (section) {
+                  const topic = section.topics.find((t: any) => t.id === item.topicId);
+                  if (topic) {
+                     topic.status = 'done';
+                     topic.confidence = Math.max(8, topic.confidence || 0);
+                  }
+               }
+            });
+          }
         }
         parsedData.stateMutations.updatedData = updatedData;
       }
