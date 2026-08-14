@@ -8,7 +8,7 @@ interface EditableFieldProps {
   type?: "text" | "number" | "date";
   className?: string;
   onChange: (newValue: any) => void;
-  renderAs?: "span" | "div" | "h1" | "h2" | "h3" | "p";
+  renderAs?: "span" | "div" | "h1" | "h2" | "h3" | "h4" | "p";
 }
 
 export function EditableField({ value, type = "text", className = "", onChange, renderAs: Component = "span" }: EditableFieldProps) {
@@ -31,7 +31,7 @@ export function EditableField({ value, type = "text", className = "", onChange, 
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      e.currentTarget.blur();
+      (e.currentTarget as HTMLElement).blur();
     }
   };
 

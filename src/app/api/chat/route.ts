@@ -50,8 +50,15 @@ If he provides the log, determine the rating based on the rules. Update the stat
 If no data needs mutation (e.g. you are just answering a question), omit stateMutations.`;
 
 export async function POST(req: Request) {
+  let prompt: string = "";
+  let model: string = "";
+  let currentData: any = null;
+
   try {
-    const { prompt, model, currentData } = await req.json();
+    const body = await req.json();
+    prompt = body.prompt;
+    model = body.model;
+    currentData = body.currentData;
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
