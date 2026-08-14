@@ -57,6 +57,7 @@ export async function POST(req: Request) {
   let prompt: string = "";
   let model: string = "";
   let currentData: any = null;
+  let userMessage: string = "";
 
   try {
     const body = await req.json();
@@ -70,7 +71,7 @@ export async function POST(req: Request) {
 
     let rawResponseText = "";
 
-    const userMessage = `CURRENT SYSTEM STATE:
+    userMessage = `CURRENT SYSTEM STATE:
 ${JSON.stringify(currentData, null, 2)}
 
 USER INPUT: "${prompt}"
