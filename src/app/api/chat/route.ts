@@ -69,8 +69,12 @@ export async function POST(req: Request) {
 
     let rawResponseText = "";
 
-    const userMessage = `Current Data context: Target=${currentData?.targetGoal}. 
-    User input: "${prompt}"`;
+    const userMessage = `CURRENT SYSTEM STATE:
+${JSON.stringify(currentData, null, 2)}
+
+USER INPUT: "${prompt}"
+
+Remember: Analyze the CURRENT SYSTEM STATE to answer questions about previous logs, progress, or performance.`;
 
     if (model === 'gemini') {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -231,7 +235,7 @@ export async function POST(req: Request) {
         model: "gemini-flash-latest",
         systemInstruction: systemPrompt 
       });
-      const result = await aiModel.generateContent(`Current Data context: Target=${currentData?.targetGoal}. User input: "${prompt}"`);
+      const result = await aiModel.generateContent(userMessage);
       let fallbackText = result.response.text().trim();
       
       const firstBrace = fallbackText.indexOf('{');
