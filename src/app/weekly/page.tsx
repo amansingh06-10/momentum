@@ -38,8 +38,8 @@ export default function WeeklyPage() {
               </div>
               <div className="flex flex-col items-end">
                 <span className="font-mono text-xs text-neo-muted uppercase">Avg Rating</span>
-                <span className={`font-mono text-xl font-bold ${week.average >= 9 ? 'text-neo-cyan' : 'text-white'}`}>
-                  {week.average.toFixed(1)}
+                <span className={`font-mono text-xl font-bold ${(week.average || 0) >= 9 ? 'text-neo-cyan' : 'text-white'}`}>
+                  {(week.average || 0).toFixed(1)}
                 </span>
               </div>
             </div>
