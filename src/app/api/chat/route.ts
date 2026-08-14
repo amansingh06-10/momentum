@@ -33,6 +33,9 @@ If he provides the log, determine the rating based on the rules. Update the stat
 {
   "message": "A summary of what you did, the rating (and why), streak info, and progress toward 190 target.",
   "stateMutations": {
+    "addNewWeek": {
+      "label": "Week 2"
+    },
     "addDayLog": {
       "date": "Aug 10", 
       "day": "Mon", 
@@ -150,19 +153,37 @@ export async function POST(req: Request) {
 
     // Extract JSON block robustly
     let jsonStr = rawResponseText.trim();
+    let parsedData;
+    
     const firstBrace = jsonStr.indexOf('{');
     const lastBrace = jsonStr.lastIndexOf('}');
+    
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
       jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+      try {
+        parsedData = JSON.parse(jsonStr);
+      } catch (e) {
+        parsedData = { message: rawResponseText };
+      }
+    } else {
+      // If AI just answered conversationally without JSON
+      parsedData = { message: rawResponseText };
     }
 
     try {
-      const parsedData = JSON.parse(jsonStr);
-      
       // Perform state mutation on currentData
       const updatedData = { ...currentData };
       if (parsedData.stateMutations) {
-        const { addDayLog, markTopicsDone } = parsedData.stateMutations;
+        const { addDayLog, markTopicsDone, addNewWeek } = parsedData.stateMutations;
+        
+        // Add new week if requested
+        if (addNewWeek && updatedData.weeks) {
+          updatedData.weeks.unshift({
+            label: addNewWeek.label || "New Week",
+            average: 0,
+            days: []
+          });
+        }
         
         // Add entry to current week
         if (addDayLog && updatedData.weeks && updatedData.weeks.length > 0) {
@@ -215,14 +236,28 @@ export async function POST(req: Request) {
       
       const firstBrace = fallbackText.indexOf('{');
       const lastBrace = fallbackText.lastIndexOf('}');
+      let parsedData;
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
         fallbackText = fallbackText.substring(firstBrace, lastBrace + 1);
+        try {
+          parsedData = JSON.parse(fallbackText);
+        } catch(e) { parsedData = { message: fallbackText }; }
+      } else {
+        parsedData = { message: fallbackText };
       }
       
-      const parsedData = JSON.parse(fallbackText);
       const updatedData = { ...currentData };
       if (parsedData.stateMutations) {
-        const { addDayLog, markTopicsDone } = parsedData.stateMutations;
+        const { addDayLog, markTopicsDone, addNewWeek } = parsedData.stateMutations;
+        
+        if (addNewWeek && updatedData.weeks) {
+          updatedData.weeks.unshift({
+            label: addNewWeek.label || "New Week",
+            average: 0,
+            days: []
+          });
+        }
+        
         if (addDayLog && updatedData.weeks && updatedData.weeks.length > 0) {
           updatedData.weeks[0].days.push(addDayLog);
           const weekDays = updatedData.weeks[0].days.filter((d: any) => d.rating !== null);
