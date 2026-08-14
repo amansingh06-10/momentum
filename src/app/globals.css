@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-neo-bg: #0a0a0c;
+  --color-neo-surface: rgba(255, 255, 255, 0.02);
+  --color-neo-highlight: rgba(255, 255, 255, 0.06);
+  --color-neo-shadow: rgba(0, 0, 0, 0.8);
+  
+  --color-neo-text: #ffffff;
+  --color-neo-muted: #8a8f98;
+  --color-neo-accent: #ececf3; /* Sleek silver/white accent */
+  --color-neo-cyan: #00e5ff;
+  --color-neo-magenta: #ff00ff;
+  --color-neo-mint: #00ffa3;
+  
+  --font-syne: "Syne", sans-serif;
+  --font-mono: "DM Mono", "Fira Code", monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--color-neo-bg);
+    color: var(--color-neo-text);
+    font-family: var(--font-syne);
+    overflow-x: hidden;
+    background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Studio Monolith Glassmorphic/Neomorphic hybrid */
+  .neo-flat {
+    background: var(--color-neo-surface);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 
+      0 4px 24px -1px var(--color-neo-shadow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    border-radius: 20px;
+  }
+
+  .neo-inset {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
+  }
+
+  .neo-btn {
+    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 4px 12px rgba(0,0,0,0.2),
+      inset 0 1px 0 rgba(255,255,255,0.1);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    color: var(--color-neo-text);
+  }
+  
+  .neo-btn:hover {
+    background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 24px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  
+  .neo-btn:active {
+    transform: translateY(0);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    background: rgba(255,255,255,0.02);
+  }
+
+  /* Accent Button (Primary Action) */
+  .neo-btn-primary {
+    background: var(--color-neo-text);
+    color: var(--color-neo-bg);
+    border: none;
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+  }
+  .neo-btn-primary:hover {
+    background: #e0e0e0;
+    box-shadow: 0 6px 24px rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .text-gradient {
+    background: linear-gradient(180deg, #ffffff 0%, #8a8f98 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
+
+/* Scrollbar formatting */
+::-webkit-scrollbar { width: 6px; height: 6px; background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
