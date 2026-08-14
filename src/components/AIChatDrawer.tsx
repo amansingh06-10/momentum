@@ -110,12 +110,9 @@ export function AIChatDrawer() {
                     value={model} 
                     onChange={setModel}
                     options={[
-                      { value: "gemini", label: "Gemini 1.5 Pro" },
-                      { value: "claude", label: "Claude 3.5 Sonnet" },
-                      { value: "kimi", label: "Moonshot Kimi" },
-                      { value: "glm", label: "Zhipu GLM-4" }
+                      { value: "gemini", label: "Gemini Flash" }
                     ]}
-                    className="w-40"
+                    className="w-36"
                   />
                   <button onClick={() => setIsChatOpen(false)} className="text-neo-muted hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-1.5 rounded-md">
                     <X size={18} />

@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     if (model === 'gemini') {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
       const aiModel = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
+        model: "gemini-flash-latest",
         systemInstruction: systemPrompt 
       });
       const result = await aiModel.generateContent(userMessage);
@@ -94,14 +94,14 @@ export async function POST(req: Request) {
       rawResponseText = data.content?.[0]?.text || "";
     }
     else if (model === 'kimi') {
-      const response = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+      const response = await fetch('https://api.moonshot.ai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.MOONSHOT_API_KEY}`
         },
         body: JSON.stringify({
-          model: "moonshot-v1-8k",
+          model: "kimi-k3",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userMessage }
@@ -110,17 +110,18 @@ export async function POST(req: Request) {
         })
       });
       const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error?.message || "Moonshot API error");
       rawResponseText = data.choices?.[0]?.message?.content || "";
     }
     else if (model === 'glm') {
-      const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+      const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.ZHIPU_API_KEY}`
         },
         body: JSON.stringify({
-          model: "glm-4-flash",
+          model: "glm-5.2",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userMessage }
@@ -129,15 +130,23 @@ export async function POST(req: Request) {
         })
       });
       const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error?.message || "Zhipu API error");
       rawResponseText = data.choices?.[0]?.message?.content || "";
     } else {
       return NextResponse.json({ error: 'Unsupported model selected.' }, { status: 400 });
     }
+    
+    // MASTER FALLBACK: If rawResponseText is empty due to silent failures, force Gemini
+    if (!rawResponseText) {
+       throw new Error("Provider returned empty response");
+    }
 
-    // Clean markdown if AI ignored instructions
+    // Extract JSON block robustly
     let jsonStr = rawResponseText.trim();
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/^```json\n/, '').replace(/\n```$/, '');
+    const firstBrace = jsonStr.indexOf('{');
+    const lastBrace = jsonStr.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
+      jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
     }
 
     try {
@@ -185,7 +194,51 @@ export async function POST(req: Request) {
     }
 
   } catch (error: any) {
-    console.error("Chat API Error:", error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    console.error("Chat API Error, initiating Gemini Fallback:", error);
+    
+    // MASTER FALLBACK: Use Gemini if the selected provider fails
+    try {
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+      const aiModel = genAI.getGenerativeModel({ 
+        model: "gemini-flash-latest",
+        systemInstruction: systemPrompt 
+      });
+      const result = await aiModel.generateContent(`Current Data context: Target=${currentData?.targetGoal}. User input: "${prompt}"`);
+      let fallbackText = result.response.text().trim();
+      
+      const firstBrace = fallbackText.indexOf('{');
+      const lastBrace = fallbackText.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
+        fallbackText = fallbackText.substring(firstBrace, lastBrace + 1);
+      }
+      
+      const parsedData = JSON.parse(fallbackText);
+      const updatedData = { ...currentData };
+      if (parsedData.stateMutations) {
+        const { addDayLog, markTopicsDone } = parsedData.stateMutations;
+        if (addDayLog && updatedData.weeks && updatedData.weeks.length > 0) {
+          updatedData.weeks[0].days.push(addDayLog);
+          const weekDays = updatedData.weeks[0].days.filter((d: any) => d.rating !== null);
+          const sum = weekDays.reduce((a: number, d: any) => a + d.rating, 0);
+          updatedData.weeks[0].average = weekDays.length > 0 ? Number((sum / weekDays.length).toFixed(1)) : 0;
+        }
+        if (markTopicsDone && markTopicsDone.length > 0) {
+          markTopicsDone.forEach((item: any) => {
+             const section = updatedData.progress[item.sectionKey];
+             if (section) {
+                const topic = section.topics.find((t: any) => t.id === item.topicId);
+                if (topic) {
+                   topic.status = 'done';
+                   topic.confidence = Math.max(8, topic.confidence || 0);
+                }
+             }
+          });
+        }
+        parsedData.stateMutations.updatedData = updatedData;
+      }
+      return NextResponse.json(parsedData);
+    } catch (fallbackError: any) {
+      return NextResponse.json({ error: "All AI providers failed. Check your API keys." }, { status: 500 });
+    }
   }
 }
