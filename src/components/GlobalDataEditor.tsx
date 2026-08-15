@@ -46,7 +46,7 @@ export function GlobalDataEditor() {
     reader.onload = (event) => {
       try {
         const text = event.target?.result as string;
-        setJsonText(text); // Just load it into the editor so they can review before saving
+        setJsonText(text);
         setError(null);
       } catch (err: any) {
         setError("Failed to read file.");
@@ -56,62 +56,62 @@ export function GlobalDataEditor() {
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="neo-flat w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+    <div className="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-md flex items-center justify-center p-6 font-sans">
+      <div className="neo-elevated w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-white/[0.06] shadow-2xl">
         
         {/* Header */}
-        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+        <div className="p-4 border-b border-white/[0.04] flex justify-between items-center bg-[#181b26]">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-neo-cyan rounded-full animate-pulse shadow-[0_0_10px_var(--color-neo-cyan)]" />
-            <h2 className="font-mono text-sm font-bold text-white tracking-widest uppercase">
+            <div className="w-2.5 h-2.5 bg-amber-400 rounded-full" />
+            <h2 className="font-mono text-sm font-bold text-white tracking-wider uppercase">
               Global State Editor
             </h2>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2.5 flex-wrap">
             <button 
               onClick={downloadBackup}
-              className="px-4 py-2 font-mono text-[11px] text-neo-muted hover:text-white uppercase tracking-widest flex items-center gap-2 border border-white/5 rounded-lg bg-black/20"
+              className="px-3.5 py-1.5 font-mono text-xs neo-btn text-slate-300 hover:text-white flex items-center gap-1.5"
             >
-              <Download size={14} /> Backup
+              <Download size={13} /> Backup
             </button>
-            <label className="px-4 py-2 font-mono text-[11px] text-neo-muted hover:text-white uppercase tracking-widest flex items-center gap-2 border border-white/5 rounded-lg bg-black/20 cursor-pointer">
-              <Upload size={14} /> Import
+            <label className="px-3.5 py-1.5 font-mono text-xs neo-btn text-slate-300 hover:text-white flex items-center gap-1.5 cursor-pointer">
+              <Upload size={13} /> Import
               <input type="file" accept=".json" className="hidden" onChange={uploadBackup} />
             </label>
             <button 
               onClick={() => setIsDataModalOpen(false)}
-              className="px-4 py-2 font-mono text-[11px] text-neo-muted hover:text-white uppercase tracking-widest transition-colors ml-4"
+              className="px-3.5 py-1.5 font-mono text-xs text-slate-400 hover:text-white transition-colors ml-2"
             >
               Cancel
             </button>
             <button 
               onClick={handleSave}
-              className="neo-btn neo-btn-primary px-6 py-2 font-mono text-[11px] uppercase tracking-widest flex items-center gap-2"
+              className="neo-btn-primary px-5 py-1.5 font-mono text-xs font-semibold flex items-center gap-1.5 rounded-xl"
             >
-              <Save size={14} /> Save Changes
+              <Save size={13} /> Save Changes
             </button>
           </div>
         </div>
 
         {/* Error Bar */}
         {error && (
-          <div className="bg-red-500/10 border-b border-red-500/20 p-3 flex items-center gap-2 text-red-400 font-mono text-xs">
+          <div className="bg-rose-950/60 border-b border-rose-500/30 p-3 flex items-center gap-2 text-rose-300 font-mono text-xs">
             <AlertTriangle size={14} />
             JSON Parse Error: {error}
           </div>
         )}
 
         {/* Editor */}
-        <div className="flex-1 bg-[#050505] relative">
+        <div className="flex-1 bg-[#0d0f17] relative">
           <textarea
             value={jsonText}
             onChange={(e) => setJsonText(e.target.value)}
-            className="absolute inset-0 w-full h-full p-6 bg-transparent text-[#e0e0e0] font-mono text-[13px] leading-relaxed resize-none outline-none focus:ring-1 focus:ring-neo-cyan/50"
+            className="absolute inset-0 w-full h-full p-6 bg-transparent text-slate-200 font-mono text-xs leading-relaxed resize-none outline-none"
             spellCheck={false}
           />
         </div>
         
-        <div className="p-3 border-t border-white/10 bg-white/[0.02] text-center font-mono text-[10px] text-neo-muted">
+        <div className="p-3 border-t border-white/[0.04] bg-[#141620] text-center font-mono text-[11px] text-slate-400">
           Modify the raw JSON state. Changes will update heatmaps, schedules, logs, and progress immediately.
         </div>
       </div>

@@ -4,10 +4,14 @@ import { DataProvider } from "@/lib/DataContext";
 import { Navigation } from "@/components/Navigation";
 import { AIChatDrawer } from "@/components/AIChatDrawer";
 import { GlobalDataEditor } from "@/components/GlobalDataEditor";
+import { CommandPalette } from "@/components/CommandPalette";
+import { ProblemDetailDrawer } from "@/components/ProblemDetailDrawer";
+import { FocusTimer } from "@/components/FocusTimer";
+import { AmbientBackground } from "@/components/AmbientBackground";
 
 export const metadata: Metadata = {
-  title: "Momentum - CSE Tracker",
-  description: "Striver's A2Z & Backend Tracker Monolith",
+  title: "Momentum · Developer Command Center",
+  description: "Personal DSA Striver's A2Z, Backend Roadmap, and Academics Tracking Monolith",
 };
 
 export default function RootLayout({
@@ -16,28 +20,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased min-h-screen relative text-neo-text">
-        {/* Background Image & Ambient Glow Layer */}
-        <div className="fixed inset-0 z-[-1] overflow-hidden">
-          <div className="absolute inset-0 bg-[#0a0a0c]/80 backdrop-blur-[8px] z-10" />
-          <div className="absolute -top-40 -left-40 w-96 h-96 bg-neo-cyan/20 rounded-full blur-[120px] animate-pulse-slow z-10 pointer-events-none" />
-          <div className="absolute top-1/2 -right-40 w-96 h-96 bg-neo-mint/15 rounded-full blur-[140px] animate-pulse-slow z-10 pointer-events-none" style={{ animationDelay: '3s' }} />
-          <img 
-            src="/bg.jpg" 
-            alt="Workspace Background" 
-            className="w-full h-full object-cover object-center opacity-60 mix-blend-luminosity"
-          />
-        </div>
+    <html lang="en" className="dark">
+      <body className="antialiased min-h-screen relative text-[#f1f5f9] bg-[#10121a] selection:bg-slate-700 selection:text-white overflow-x-hidden">
+        {/* Floating Ambient Motion Canvas */}
+        <AmbientBackground />
         
-        <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03]" 
-             style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 1) 2px, rgba(255, 255, 255, 1) 4px)" }} />
-        
+        {/* Subtle dot matrix overlay for depth */}
+        <div 
+          className="fixed inset-0 pointer-events-none z-[9998] opacity-[0.025]" 
+          style={{ backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px)", backgroundSize: "28px 28px" }} 
+        />
+
         <DataProvider>
           <Navigation />
-          <main className="max-w-7xl mx-auto px-8 py-10">
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
             {children}
           </main>
+          <CommandPalette />
+          <ProblemDetailDrawer />
+          <FocusTimer />
           <AIChatDrawer />
           <GlobalDataEditor />
         </DataProvider>

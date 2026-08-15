@@ -8,6 +8,9 @@ export interface Topic {
   status: 'done' | 'partial' | 'pending';
   confidence: number; // 0-10
   difficulty?: 'easy' | 'medium' | 'hard';
+  notes?: string;
+  solution?: string;
+  leetcodeUrl?: string;
 }
 
 export interface ProgressSection {
@@ -111,4 +114,10 @@ export interface AppStats {
   streak: number;
   lastDayFrozen: boolean;
   overallAvgRating: string;
+}
+
+export interface ActiveProblemInfo {
+  sectionKey: string;
+  sectionLabel: string;
+  topic: Topic;
 }

@@ -4,19 +4,45 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useApp } from "@/lib/DataContext";
-import { LayoutDashboard, BookOpen, Search, Calendar, Server, Clock, GraduationCap, Home, Activity, Edit2, Check } from "lucide-react";
+import { AnimatedLogo } from "./AnimatedLogo";
+import {
+  LayoutDashboard,
+  BookOpen,
+  Search,
+  Calendar,
+  Server,
+  Clock,
+  GraduationCap,
+  Home,
+  Activity,
+  Edit3,
+  Check,
+  Settings,
+  Sparkles,
+  Flame,
+  Zap,
+  Plus,
+  Timer
+} from "lucide-react";
 
 export function Navigation() {
   const pathname = usePathname();
-  const { stats, data, isEditMode, setIsEditMode, setIsChatOpen, setIsDataModalOpen } = useApp();
-  const { Settings } = require('lucide-react');
+  const {
+    stats,
+    isEditMode,
+    setIsEditMode,
+    setIsChatOpen,
+    setIsDataModalOpen,
+    setIsCommandPaletteOpen,
+    setIsTimerOpen
+  } = useApp();
 
   const tabs = [
     { id: "/", label: "Home", icon: Home },
     { id: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "/progress", label: "DSA Sheet", icon: BookOpen },
     { id: "/problems", label: "Problems", icon: Search },
-    { id: "/weekly", label: "Logs", icon: Calendar },
+    { id: "/weekly", label: "Weekly Logs", icon: Calendar },
     { id: "/heatmap", label: "Heatmap", icon: Activity },
     { id: "/backend", label: "Backend", icon: Server },
     { id: "/schedule", label: "Schedule", icon: Clock },
@@ -24,89 +50,154 @@ export function Navigation() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 pt-6 px-8 mb-10 pb-4 backdrop-blur-xl bg-[#0a0a0c]/70 border-b border-white/[0.04]">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 max-w-7xl mx-auto">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl neo-inset flex items-center justify-center border border-white/10">
-             <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-[#0a0a0c] rounded-full"></div>
-             </div>
-          </div>
+    <header className="sticky top-0 z-50 pt-3.5 sm:pt-4 px-4 sm:px-6 lg:px-8 mb-4 sm:mb-6 pb-3 bg-[#10121a]/90 backdrop-blur-xl border-b border-white/[0.04]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3 sm:mb-4 max-w-7xl mx-auto">
+        {/* Brand with Multi-Axis Animated Logo */}
+        <Link href="/" className="flex items-center gap-3.5 group">
+          <AnimatedLogo />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              Momentum
-            </h1>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-neo-muted mt-0.5">
-              Studio Monolith V2
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 flex-wrap">
-          {/* Minimalist Streak Widget */}
-          <div className="neo-inset px-5 py-2.5 flex items-center gap-4">
             <div className="flex items-center gap-2">
-               <div className={`w-2 h-2 rounded-full ${stats.streak > 0 ? 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'bg-neo-muted'}`}></div>
-               <span className="font-mono text-sm font-bold">{stats.streak} <span className="text-neo-muted font-normal text-xs">Day Streak</span></span>
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white group-hover:text-slate-200 transition-colors">
+                Momentum
+              </h1>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md neo-inset text-slate-400 font-medium">
+                v2.0
+              </span>
             </div>
-            <div className="w-[1px] h-4 bg-white/10"></div>
-            <div className="font-mono text-[10px] text-neo-muted">
-               {stats.lastDayFrozen ? "Frozen" : "Active"}
+            <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+              Developer Command Center
             </div>
           </div>
+        </Link>
 
-          <button 
+        {/* Action Controls & Telemetry */}
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+          {/* Quick Command Palette Button (Cmd+K) */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setIsCommandPaletteOpen(true)}
+            className="px-3 py-1.5 rounded-xl neo-btn text-xs font-mono flex items-center gap-2"
+          >
+            <Search size={13} className="text-slate-400" />
+            <span className="hidden sm:inline">Search</span>
+            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded neo-inset text-slate-400">
+              ⌘K
+            </span>
+          </motion.button>
+
+          {/* Pomodoro Focus Timer Pill with Rotating Icon */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setIsTimerOpen(true)}
+            className="px-3 py-1.5 rounded-xl neo-btn text-xs font-mono flex items-center gap-1.5 text-slate-300 hover:text-white"
+            title="Open Pomodoro Focus Timer"
+          >
+            <Timer size={13} className="text-amber-400 animate-spin" style={{ animationDuration: '10s' }} />
+            <span className="hidden sm:inline">Focus</span>
+          </motion.button>
+
+          {/* Live Streak & Mastery Widget with Flame Breathing Pulse */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="px-3.5 py-1.5 flex items-center gap-3 neo-inset rounded-xl"
+          >
+            <div className="flex items-center gap-1.5 text-amber-400">
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], rotate: [0, -4, 4, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Flame size={13} />
+              </motion.div>
+              <span className="font-mono text-xs font-bold text-slate-200">
+                {stats.streak} <span className="text-slate-500 font-normal text-[10px]">streak</span>
+              </span>
+            </div>
+            <div className="w-[1px] h-3 bg-white/10" />
+            <div className="flex items-center gap-1 font-mono text-[10px] text-slate-300">
+              <Zap size={11} className="text-amber-400" />
+              <span>{stats.doneTopics} solved ({stats.overallPct}%)</span>
+            </div>
+          </motion.div>
+
+          {/* Raw JSON Data Settings */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setIsDataModalOpen(true)}
-            className="neo-btn px-3 py-3 font-mono text-neo-muted hover:text-white flex items-center justify-center transition-colors"
-            title="Data Settings & Backup"
+            className="p-2 text-slate-400 hover:text-white rounded-xl neo-btn"
+            title="State Editor & JSON Backup"
           >
             <Settings size={14} />
-          </button>
+          </motion.button>
 
-          <button 
+          {/* Edit Mode Toggle */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`neo-btn px-4 py-3 font-mono text-[11px] uppercase tracking-widest flex items-center gap-2 ${isEditMode ? 'bg-neo-cyan text-[#0a0a0c]' : ''}`}
+            className={`px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5 rounded-xl transition-all ${
+              isEditMode
+                ? "neo-inset text-amber-400 font-bold"
+                : "neo-btn text-slate-300 hover:text-white"
+            }`}
           >
-            {isEditMode ? <Check size={14} /> : <Edit2 size={14} />}
-            {isEditMode ? 'Exit Edit' : 'Edit Mode'}
-          </button>
+            {isEditMode ? <Check size={12} className="text-amber-400" /> : <Edit3 size={12} />}
+            <span>{isEditMode ? "Editing" : "Edit"}</span>
+          </motion.button>
 
-          <button 
+          {/* Log Session / Quick AI */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => setIsChatOpen(true)}
-            className="neo-btn neo-btn-primary px-6 py-3 font-mono text-[11px] uppercase tracking-widest flex items-center gap-2"
+            className="px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-wider font-semibold rounded-xl neo-btn-primary flex items-center gap-1.5"
           >
-            <span className="font-sans text-base leading-none">+</span> Log Session
-          </button>
+            <Plus size={13} className="stroke-[2.5]" />
+            <span>Log Study</span>
+          </motion.button>
         </div>
       </div>
 
-      <nav className="flex gap-2 overflow-x-auto max-w-7xl mx-auto hide-scrollbar">
-        {tabs.map((t) => {
-          const isActive = pathname === t.id;
-          const Icon = t.icon;
-          return (
-            <Link
-              key={t.id}
-              href={t.id}
-              className={`relative flex items-center gap-2 px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest whitespace-nowrap rounded-lg transition-all ${
-                isActive
-                  ? "text-white"
-                  : "text-neo-muted hover:text-white hover:bg-white/[0.02]"
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute inset-0 bg-white/10 border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] rounded-lg -z-10"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+      {/* Navigation Tabs Bar with Gliding Indicator & Fading Edges */}
+      <div className="relative max-w-7xl mx-auto overflow-hidden">
+        <nav className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+          {tabs.map((t) => {
+            const isActive = pathname === t.id;
+            const Icon = t.icon;
+            return (
+              <Link
+                key={t.id}
+                href={t.id}
+                className={`relative flex items-center gap-1.5 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-wider whitespace-nowrap rounded-xl transition-all ${
+                  isActive
+                    ? "text-white font-bold"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-nav-indicator"
+                    className="absolute inset-0 neo-inset rounded-xl -z-10"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                {!isActive && (
+                  <div className="absolute inset-0 neo-btn rounded-xl -z-20 opacity-80" />
+                )}
+                <Icon
+                  size={13}
+                  className={`relative z-10 transition-colors ${
+                    isActive ? "text-amber-400" : "text-slate-400 opacity-80"
+                  }`}
                 />
-              )}
-              <Icon size={14} className={isActive ? "text-white relative z-10" : "text-neo-muted opacity-70 relative z-10"} />
-              <span className="relative z-10">{t.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+                <span className="relative z-10">{t.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </header>
   );
 }

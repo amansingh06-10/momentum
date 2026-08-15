@@ -37,20 +37,20 @@ export function NeoSelect({ value, options, onChange, className = "" }: NeoSelec
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-black/20 neo-inset text-xs font-mono text-neo-muted border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-neo-cyan transition-colors"
+        className="w-full flex items-center justify-between neo-inset text-xs font-mono text-slate-300 rounded-xl px-3 py-2.5 outline-none transition-colors"
       >
         <span className="truncate">{selectedOption?.label}</span>
-        <ChevronDown size={14} className={`ml-2 transition-transform duration-300 ${isOpen ? "rotate-180 text-neo-cyan" : "text-neo-muted"}`} />
+        <ChevronDown size={14} className={`ml-2 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-white" : ""}`} />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full mt-2 left-0 w-full min-w-[140px] z-[999] neo-flat border border-white/10 p-1 flex flex-col gap-1 shadow-[0_10px_40px_rgba(0,0,0,0.8)]"
+            className="absolute top-full mt-2 left-0 w-full min-w-[150px] z-[999] neo-elevated p-1 flex flex-col gap-0.5 shadow-2xl"
           >
             {options.map((option) => (
               <button
@@ -60,10 +60,10 @@ export function NeoSelect({ value, options, onChange, className = "" }: NeoSelec
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`text-left px-3 py-2 rounded-md font-mono text-xs transition-colors ${
+                className={`text-left px-3 py-2 rounded-lg font-mono text-xs transition-colors ${
                   value === option.value
-                    ? "bg-neo-cyan/10 text-neo-cyan"
-                    : "text-neo-muted hover:bg-white/5 hover:text-white"
+                    ? "neo-inset text-white font-bold"
+                    : "text-slate-400 hover:bg-white/[0.04] hover:text-white"
                 }`}
               >
                 {option.label}

@@ -1,96 +1,126 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Code2, Database, Brain } from "lucide-react";
+import { ArrowRight, Code2, Database, Brain, Sparkles, Flame, CheckCircle2, TrendingUp, Layers, Terminal } from "lucide-react";
 import { motion } from "framer-motion";
+import { useApp } from "@/lib/DataContext";
 
 export default function LandingPage() {
+  const { stats, setIsChatOpen } = useApp();
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[75vh] gap-16 px-4">
+    <div className="flex flex-col items-center justify-center min-h-[78vh] gap-16 px-4 font-sans">
       {/* Hero Section */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="text-center max-w-4xl flex flex-col items-center relative z-10"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-8 hover:border-neo-cyan/40 transition-colors">
-           <span className="w-2 h-2 rounded-full bg-neo-cyan shadow-[0_0_8px_var(--color-neo-cyan)] animate-pulse" />
-           <span className="font-mono text-[10px] uppercase tracking-widest text-neo-muted">System Online v2.0</span>
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neo-inset mb-8 cursor-default"
+        >
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="font-mono text-[11px] uppercase tracking-widest text-slate-300 font-semibold">
+            System Online · Momentum v2.0
+          </span>
+        </motion.div>
+
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
           Master Your Craft. <br />
-          <span className="text-gradient-cyan">Track Your Momentum.</span>
+          <span className="animated-gradient-text">
+            Track Your Momentum.
+          </span>
         </h1>
-        
-        <p className="text-neo-muted text-base md:text-lg font-mono mb-12 max-w-2xl leading-relaxed opacity-80">
-          A high-craft glassmorphic workspace for CSE students. Log DSA progress, monitor your backend roadmap, and organize your college schedule with an integrated AI.
+
+        <p className="text-slate-400 text-sm sm:text-base md:text-lg font-sans mb-10 max-w-2xl leading-relaxed">
+          The personal developer command center. Master Striver&apos;s A2Z DSA sheet, architect production Node.js backends, track academic exams, and synchronize your schedule with an integrated AI copilot.
         </p>
-        
-        <div className="flex items-center gap-6">
-           <Link href="/dashboard" className="neo-btn neo-btn-primary px-8 py-4 font-mono text-sm uppercase tracking-widest flex items-center gap-3 group shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] transition-all">
-             Enter Workspace
-             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-           </Link>
-           <a href="https://github.com/Aman06-10" target="_blank" rel="noreferrer" className="font-mono text-xs uppercase tracking-widest text-neo-muted hover:text-white transition-colors border-b border-white/20 pb-1">
-             View Github
-           </a>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+          <motion.div whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.96 }}>
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto px-8 py-4 font-mono text-xs sm:text-sm uppercase tracking-widest font-bold rounded-2xl neo-btn-primary flex items-center justify-center gap-3 group transition-all"
+            >
+              <span>Enter Dashboard</span>
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+          <motion.button
+            whileHover={{ scale: 1.04, y: -2 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setIsChatOpen(true)}
+            className="w-full sm:w-auto px-6 py-4 font-mono text-xs uppercase tracking-widest text-slate-300 hover:text-white rounded-2xl neo-btn transition-all flex items-center justify-center gap-2"
+          >
+            <Sparkles size={15} className="text-amber-400" />
+            <span>Launch AI Copilot</span>
+          </motion.button>
         </div>
       </motion.div>
 
-      {/* Feature Grid */}
-      <motion.div 
+      {/* Feature Pillars Grid */}
+      <motion.div
         initial="hidden"
         animate="show"
         variants={{
           hidden: { opacity: 0 },
           show: {
             opacity: 1,
-            transition: { staggerChildren: 0.15 }
-          }
+            transition: { staggerChildren: 0.12 },
+          },
         }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mt-8"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl"
       >
-        <motion.div 
+        <motion.div
           variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
           whileHover={{ y: -6, scale: 1.02 }}
-          className="neo-flat p-8 flex flex-col items-start group border border-white/5 hover:border-neo-cyan/30 transition-all duration-300 shadow-lg"
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="neo-card p-7 flex flex-col items-start group transition-all"
         >
-          <div className="w-12 h-12 rounded-xl neo-inset flex items-center justify-center mb-6 text-white/50 group-hover:text-neo-cyan transition-colors border border-white/5 group-hover:border-neo-cyan/20">
-            <Code2 size={20} />
+          <div className="w-12 h-12 rounded-xl neo-btn flex items-center justify-center mb-5 text-amber-400 group-hover:scale-105 transition-transform">
+            <Code2 size={22} />
           </div>
-          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-neo-cyan transition-colors">DSA Mastery</h3>
-          <p className="font-mono text-xs text-neo-muted leading-relaxed">
-            Track your progress through Striver's A2Z sheet. Monitor confidence levels and completion rates seamlessly.
+          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-slate-200 transition-colors">
+            DSA Sheet Mastery
+          </h3>
+          <p className="text-xs text-slate-400 leading-relaxed font-sans">
+            Track and master all 190+ topics in Striver&apos;s A2Z sheet. Monitor confidence ratings, solve intervals, and review algorithms.
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
           whileHover={{ y: -6, scale: 1.02 }}
-          className="neo-flat p-8 flex flex-col items-start group border border-white/5 hover:border-neo-mint/30 transition-all duration-300 shadow-lg"
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="neo-card p-7 flex flex-col items-start group transition-all"
         >
-          <div className="w-12 h-12 rounded-xl neo-inset flex items-center justify-center mb-6 text-white/50 group-hover:text-neo-mint transition-colors border border-white/5 group-hover:border-neo-mint/20">
-            <Database size={20} />
+          <div className="w-12 h-12 rounded-xl neo-btn flex items-center justify-center mb-5 text-amber-400 group-hover:scale-105 transition-transform">
+            <Database size={22} />
           </div>
-          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-neo-mint transition-colors">Backend Roadmap</h3>
-          <p className="font-mono text-xs text-neo-muted leading-relaxed">
-            Visualize your journey from Node.js basics to full-stack MongoDB and PostgreSQL deployments.
+          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-slate-200 transition-colors">
+            Backend Roadmap
+          </h3>
+          <p className="text-xs text-slate-400 leading-relaxed font-sans">
+            Follow a structured roadmap from Node.js runtime fundamentals to PostgreSQL schemas, MongoDB Atlas, JWT authentication, and production REST APIs.
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
           whileHover={{ y: -6, scale: 1.02 }}
-          className="neo-flat p-8 flex flex-col items-start group border border-white/5 hover:border-neo-magenta/30 transition-all duration-300 shadow-lg"
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="neo-card p-7 flex flex-col items-start group transition-all"
         >
-          <div className="w-12 h-12 rounded-xl neo-inset flex items-center justify-center mb-6 text-white/50 group-hover:text-neo-magenta transition-colors border border-white/5 group-hover:border-neo-magenta/20">
-            <Brain size={20} />
+          <div className="w-12 h-12 rounded-xl neo-btn flex items-center justify-center mb-5 text-amber-400 group-hover:scale-105 transition-transform">
+            <Brain size={22} />
           </div>
-          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-neo-magenta transition-colors">AI Auto-Logging</h3>
-          <p className="font-mono text-xs text-neo-muted leading-relaxed">
-            Log your daily sessions using natural language. Let the AI calculate ratings and mutate your state.
+          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-slate-200 transition-colors">
+            Natural AI Sync
+          </h3>
+          <p className="text-xs text-slate-400 leading-relaxed font-sans">
+            Have natural technical conversations, get algorithmic explanations in C++, and let the AI update your entire tracker in real time.
           </p>
         </motion.div>
       </motion.div>

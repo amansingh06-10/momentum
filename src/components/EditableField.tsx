@@ -46,7 +46,7 @@ export function EditableField({ value, type = "text", className = "", onChange, 
       onChange={(e) => setLocalValue(e.target.value)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className={`bg-white/10 border border-neo-cyan/50 rounded px-2 py-0.5 outline-none focus:bg-white/20 transition-colors w-[120px] max-w-full text-white ${className}`}
+      className={`neo-inset border border-white/10 rounded-lg px-2 py-0.5 outline-none focus:border-white/30 transition-colors w-[120px] max-w-full text-white ${className}`}
       onClick={(e) => e.stopPropagation()}
     />
   );

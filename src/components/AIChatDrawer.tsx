@@ -2,7 +2,22 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useApp } from "@/lib/DataContext";
-import { Send, X, AlertCircle, Sparkles, User, Copy, Check, Trash2, Bot, Code2, Terminal } from "lucide-react";
+import {
+  Send,
+  X,
+  Sparkles,
+  User,
+  Copy,
+  Check,
+  Trash2,
+  Bot,
+  Terminal,
+  CheckCircle2,
+  Zap,
+  TrendingUp,
+  BookOpen,
+  Calendar
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NeoSelect } from "./NeoSelect";
 
@@ -16,21 +31,21 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   };
 
   return (
-    <div className="my-3 rounded-xl overflow-hidden border border-white/10 bg-[#090a0f] shadow-lg font-mono text-xs">
-      <div className="flex items-center justify-between px-3.5 py-2 bg-white/[0.04] border-b border-white/10 text-slate-400 text-[11px]">
-        <span className="flex items-center gap-1.5 text-cyan-400 font-medium lowercase">
-          <Terminal size={12} />
+    <div className="my-3 rounded-xl overflow-hidden neo-inset font-mono text-xs">
+      <div className="flex items-center justify-between px-3.5 py-2 border-b border-white/[0.04] bg-white/[0.02] text-slate-400 text-[11px]">
+        <span className="flex items-center gap-1.5 text-slate-300 font-medium lowercase">
+          <Terminal size={12} className="text-amber-400" />
           {language || "code"}
         </span>
         <button
           onClick={handleCopyCode}
-          className="flex items-center gap-1 hover:text-white transition-colors text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md"
+          className="flex items-center gap-1 hover:text-white transition-colors text-[10px] neo-btn px-2 py-0.5"
         >
           {copied ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
           {copied ? "Copied" : "Copy code"}
         </button>
       </div>
-      <pre className="p-3.5 overflow-x-auto text-slate-200 leading-relaxed font-mono selection:bg-cyan-500/30">
+      <pre className="p-3.5 overflow-x-auto text-slate-200 leading-relaxed font-mono">
         <code>{code}</code>
       </pre>
     </div>
@@ -38,7 +53,6 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
 }
 
 function InlineText({ text }: { text: string }) {
-  // Parse inline code `code`, bold **bold**, italic *italic*
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
 
   return (
@@ -48,7 +62,7 @@ function InlineText({ text }: { text: string }) {
           return (
             <code
               key={i}
-              className="px-1.5 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-mono text-[11px]"
+              className="px-1.5 py-0.5 rounded neo-inset text-amber-300 font-mono text-[11px]"
             >
               {part.slice(1, -1)}
             </code>
@@ -75,7 +89,6 @@ function InlineText({ text }: { text: string }) {
 }
 
 function NaturalMarkdownRenderer({ content }: { content: string }) {
-  // Parse block-level markdown elements: code blocks, headings, lists, blockquotes, paragraphs
   const blocks = content.split(/\n\n+/);
 
   return (
@@ -84,7 +97,7 @@ function NaturalMarkdownRenderer({ content }: { content: string }) {
         const trimmed = block.trim();
         if (!trimmed) return null;
 
-        // Fenced code block check ```lang \n code \n ```
+        // Fenced code block check
         if (trimmed.startsWith("```")) {
           const lines = trimmed.split("\n");
           const firstLine = lines[0].replace(/^```/, "").trim();
@@ -98,14 +111,14 @@ function NaturalMarkdownRenderer({ content }: { content: string }) {
         // Headings
         if (trimmed.startsWith("# ")) {
           return (
-            <h1 key={bIdx} className="text-base font-bold text-white pt-1 border-b border-white/10 pb-1">
+            <h1 key={bIdx} className="text-base font-bold text-white pt-1 border-b border-white/[0.04] pb-1">
               <InlineText text={trimmed.slice(2)} />
             </h1>
           );
         }
         if (trimmed.startsWith("## ")) {
           return (
-            <h2 key={bIdx} className="text-sm font-semibold text-cyan-300 pt-1">
+            <h2 key={bIdx} className="text-sm font-semibold text-amber-300 pt-1">
               <InlineText text={trimmed.slice(3)} />
             </h2>
           );
@@ -116,6 +129,52 @@ function NaturalMarkdownRenderer({ content }: { content: string }) {
               <InlineText text={trimmed.slice(4)} />
             </h3>
           );
+        }
+
+        // Table check
+        if (trimmed.includes("|") && trimmed.split("\n").length >= 2) {
+          const tableLines = trimmed.split("\n").filter((l) => l.trim().startsWith("|"));
+          if (tableLines.length >= 2) {
+            const headerCells = tableLines[0]
+              .split("|")
+              .map((c) => c.trim())
+              .filter(Boolean);
+            const bodyRows = tableLines
+              .slice(2)
+              .map((row) =>
+                row
+                  .split("|")
+                  .map((c) => c.trim())
+                  .filter(Boolean)
+              );
+
+            return (
+              <div key={bIdx} className="my-2 overflow-x-auto rounded-lg neo-inset">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-white/[0.04] bg-white/[0.02]">
+                      {headerCells.map((h, hIdx) => (
+                        <th key={hIdx} className="p-2.5 text-slate-200 font-semibold">
+                          <InlineText text={h} />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bodyRows.map((row, rIdx) => (
+                      <tr key={rIdx} className="border-b border-white/[0.02] last:border-0 hover:bg-white/[0.02]">
+                        {row.map((cell, cIdx) => (
+                          <td key={cIdx} className="p-2.5 text-slate-300">
+                            <InlineText text={cell} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          }
         }
 
         // List block (bullets or numbers)
@@ -135,7 +194,7 @@ function NaturalMarkdownRenderer({ content }: { content: string }) {
                 const clean = l.trim().replace(/^[•\-\*]\s*/, "").replace(/^\d+\.\s*/, "");
                 return (
                   <li key={lIdx} className="flex items-start gap-2 text-slate-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/80 mt-1.5 shrink-0 shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80 mt-1.5 shrink-0" />
                     <div className="flex-1 leading-relaxed">
                       <InlineText text={clean} />
                     </div>
@@ -151,7 +210,7 @@ function NaturalMarkdownRenderer({ content }: { content: string }) {
           return (
             <blockquote
               key={bIdx}
-              className="pl-3 py-1.5 border-l-2 border-cyan-500/50 bg-cyan-950/20 text-slate-300 italic rounded-r-lg"
+              className="pl-3 py-1.5 border-l-2 border-amber-400 neo-inset text-slate-300 italic rounded-r-lg"
             >
               <InlineText text={trimmed.slice(2)} />
             </blockquote>
@@ -174,17 +233,24 @@ function NaturalMarkdownRenderer({ content }: { content: string }) {
   );
 }
 
+const QUICK_ACTIONS = [
+  { label: "Log today's study", prompt: "Log today's study session: 2 DSA problems, 3 hours, rating 9/10", icon: Calendar },
+  { label: "Check pace to 190", prompt: "How is my pace toward my 190 target goal? Give me breakdown and recommendations.", icon: TrendingUp },
+  { label: "Explain an algorithm", prompt: "Explain the Sliding Window technique with an intuitive code example in C++.", icon: BookOpen },
+  { label: "Mark problem done", prompt: "Mark Two Sum and Kadane's Algorithm as done with confidence 9/10.", icon: Zap },
+];
+
 export function AIChatDrawer() {
   const { updateData, data, isChatOpen, setIsChatOpen } = useApp();
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([
     {
       role: "assistant",
       content:
-        "Hello Aman! How can I help you today? You can ask coding questions, explain DSA concepts, discuss backend architecture, or update your study tracker.",
+        "Hello Aman! I'm your Momentum AI copilot. Ask me any coding or algorithmic questions, discuss backend architectures, or let me log and update your tracker in real time.",
     },
   ]);
   const [input, setInput] = useState("");
-  const [model, setModel] = useState("gemini");
+  const [model, setModel] = useState("gemini-3.5-flash");
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -207,25 +273,30 @@ export function AIChatDrawer() {
     setMessages([
       {
         role: "assistant",
-        content: "Chat history cleared. What would you like to work on next?",
+        content: "Chat history cleared. What would you like to focus on next?",
       },
     ]);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const userMsg = input.trim();
+  const executePrompt = async (promptText: string) => {
+    const userMsg = promptText.trim();
     if (!userMsg || isLoading) return;
 
+    const newMessages = [...messages, { role: "user", content: userMsg }];
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: userMsg, model, currentData: data }),
+        body: JSON.stringify({
+          prompt: userMsg,
+          messages: newMessages,
+          model,
+          currentData: data
+        }),
       });
 
       const resData = await response.json();
@@ -241,19 +312,22 @@ export function AIChatDrawer() {
             updateData(updatedData);
 
             const muts = resData.stateMutations;
-            let changes = [];
+            let changes: string[] = [];
             if (muts.addDayLog) changes.push("Logged study session");
+            if (muts.updateDayLog || muts.editDayLog) changes.push("Updated day log");
+            if (muts.deleteDayLog) changes.push("Deleted log entry");
             if (muts.addNewWeek) changes.push("Started new week");
-            if (muts.updateProgress && muts.updateProgress.length > 0) changes.push("Updated DSA progress");
-            if (muts.updateOverview) changes.push("Updated overview stats");
-            if (muts.updateBackend && muts.updateBackend.length > 0) changes.push("Updated backend roadmap");
-            if (muts.updateLog && muts.updateLog.length > 0) changes.push("Modified log entries");
-            if (muts.replaceFullState) changes.push("Replaced full tracker state");
+            if (muts.updateProgress || muts.updateTopic || muts.markTopicsDone) changes.push("Updated DSA progress");
+            if (muts.updateOverview) changes.push("Updated overview targets");
+            if (muts.updateBackend || muts.addBackendPhase) changes.push("Updated backend roadmap");
+            if (muts.updateAcademics) changes.push("Updated academics marks");
+            if (muts.updateSchedule) changes.push("Updated schedule slots");
+            if (muts.replaceFullState) changes.push("Updated full tracker state");
 
             const systemMsg =
               changes.length > 0
-                ? `Tracker Synchronized: ${changes.join(", ")}.`
-                : "Tracker Synchronized.";
+                ? `⚡ Tracker Synchronized: ${changes.join(", ")}.`
+                : "⚡ Tracker Synchronized.";
 
             setMessages((prev) => [...prev, { role: "system", content: systemMsg }]);
           }
@@ -269,18 +343,21 @@ export function AIChatDrawer() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    executePrompt(input);
+  };
+
   return (
     <>
       {/* Floating Action Trigger Button */}
-      <motion.button
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.94 }}
+      <button
         onClick={() => setIsChatOpen(true)}
-        className="fixed bottom-8 right-8 z-[100] w-13 h-13 rounded-full bg-[#121420] border border-cyan-500/40 text-cyan-400 flex items-center justify-center shadow-[0_0_25px_rgba(0,212,255,0.35)] group transition-all"
-        title="Open AI Assistant"
+        className="fixed bottom-8 right-8 z-[100] w-12 h-12 rounded-full neo-btn text-amber-400 flex items-center justify-center group transition-all"
+        title="Open AI Copilot"
       >
-        <Sparkles size={20} className="transition-transform group-hover:rotate-12 group-hover:scale-110" />
-      </motion.button>
+        <Sparkles size={18} className="transition-transform group-hover:scale-110" />
+      </button>
 
       {/* Drawer Container */}
       <AnimatePresence>
@@ -301,20 +378,20 @@ export function AIChatDrawer() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: "100%", opacity: 0.8 }}
               transition={{ type: "spring", damping: 30, stiffness: 240 }}
-              className="fixed inset-y-0 right-0 w-full sm:w-[520px] md:w-[560px] bg-[#0c0d12] border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.85)] z-[200] flex flex-col font-sans"
+              className="fixed inset-y-0 right-0 w-full sm:w-[540px] md:w-[580px] bg-[#141621] border-l border-white/[0.05] shadow-[-20px_0_50px_rgba(0,0,0,0.85)] z-[200] flex flex-col font-sans"
             >
               {/* Header */}
-              <div className="p-4 sm:px-5 sm:py-4 border-b border-white/10 flex justify-between items-center bg-[#0e1017]">
+              <div className="p-4 sm:px-5 sm:py-4 border-b border-white/[0.04] flex justify-between items-center bg-[#181b26]">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_12px_rgba(99,102,241,0.25)]">
-                    <Bot size={19} className="text-cyan-400" />
+                  <div className="w-9 h-9 rounded-xl neo-inset flex items-center justify-center">
+                    <Bot size={18} className="text-amber-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white text-sm flex items-center gap-2">
-                      AI Assistant
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Online" />
+                      Momentum AI
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" title="Online" />
                     </h3>
-                    <p className="text-[11px] text-slate-400">Ask questions or update your tracker</p>
+                    <p className="text-[11px] text-slate-400">Engineering copilot & live tracker synchronization</p>
                   </div>
                 </div>
 
@@ -322,32 +399,35 @@ export function AIChatDrawer() {
                   <NeoSelect
                     value={model}
                     onChange={setModel}
-                    options={[{ value: "gemini", label: "Gemini Flash" }]}
-                    className="w-32 text-xs"
+                    options={[
+                      { value: "gemini-3.5-flash", label: "Gemini 3.5 Flash" },
+                      { value: "gemini-flash-latest", label: "Gemini Flash Latest" },
+                      { value: "gemini-3.7-flash", label: "Gemini 3.7 Flash" },
+                      { value: "gemini-flash-lite-latest", label: "Gemini Flash Lite" },
+                    ]}
+                    className="w-40 text-xs"
                   />
                   <button
                     onClick={handleClearChat}
-                    className="text-slate-400 hover:text-rose-400 transition-colors p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5"
+                    className="text-slate-400 hover:text-rose-400 transition-colors p-2 rounded-lg neo-btn"
                     title="Clear Chat"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={15} />
                   </button>
                   <button
                     onClick={() => setIsChatOpen(false)}
-                    className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5"
+                    className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg neo-btn"
                     title="Close"
                   >
-                    <X size={17} />
+                    <X size={16} />
                   </button>
                 </div>
               </div>
 
               {/* Messages Container */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4 scrollbar-thin scrollbar-thumb-white/10">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4 scrollbar-thin">
                 {messages.map((msg, i) => (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <div
                     key={i}
                     className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
                   >
@@ -355,8 +435,8 @@ export function AIChatDrawer() {
                     {msg.role === "assistant" && (
                       <div className="flex items-center gap-1.5 mb-1.5 pl-0.5">
                         <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                          <Sparkles size={12} className="text-cyan-400" />
-                          Assistant
+                          <Sparkles size={12} className="text-amber-400" />
+                          Momentum AI
                         </span>
                       </div>
                     )}
@@ -365,7 +445,7 @@ export function AIChatDrawer() {
                       <div className="flex items-center gap-1.5 mb-1.5 pr-0.5">
                         <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
                           You
-                          <User size={12} className="text-indigo-400" />
+                          <User size={12} className="text-slate-300" />
                         </span>
                       </div>
                     )}
@@ -374,15 +454,15 @@ export function AIChatDrawer() {
                     <div
                       className={`relative group max-w-[94%] sm:max-w-[90%] ${
                         msg.role === "user"
-                          ? "bg-indigo-600/20 border border-indigo-500/30 text-white rounded-2xl rounded-tr-xs px-4 py-3 shadow-md"
+                          ? "neo-inset text-white rounded-2xl rounded-tr-xs px-4 py-3"
                           : msg.role === "system"
-                          ? "w-full bg-emerald-950/20 border border-emerald-500/30 text-emerald-300 rounded-xl py-2.5 px-3.5 font-mono text-xs flex items-center gap-2 shadow-sm"
-                          : "bg-[#13151f]/90 border border-white/[0.08] text-slate-200 rounded-2xl rounded-tl-xs p-4 shadow-md backdrop-blur-md"
+                          ? "w-full neo-inset text-emerald-300 rounded-xl py-2.5 px-3.5 font-mono text-xs flex items-center gap-2"
+                          : "neo-card text-slate-200 rounded-2xl rounded-tl-xs p-4"
                       }`}
                     >
                       {msg.role === "system" ? (
                         <>
-                          <AlertCircle size={14} className="text-emerald-400 shrink-0" />
+                          <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                           <div className="font-mono text-[11px] text-emerald-300">{msg.content}</div>
                         </>
                       ) : msg.role === "assistant" ? (
@@ -390,7 +470,7 @@ export function AIChatDrawer() {
                           <NaturalMarkdownRenderer content={msg.content} />
                           <button
                             onClick={() => handleCopy(msg.content, i)}
-                            className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white"
+                            className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md neo-btn text-slate-400 hover:text-white"
                             title="Copy message"
                           >
                             {copiedIdx === i ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
@@ -402,30 +482,48 @@ export function AIChatDrawer() {
                         </div>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
 
                 {/* Loading indicator */}
                 {isLoading && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-start">
+                  <div className="flex flex-col items-start">
                     <div className="flex items-center gap-1.5 mb-1.5 pl-0.5">
                       <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                        <Sparkles size={12} className="text-cyan-400 animate-spin" />
-                        Assistant is thinking...
+                        <Sparkles size={12} className="text-amber-400 animate-spin" />
+                        Momentum AI is thinking...
                       </span>
                     </div>
-                    <div className="bg-[#13151f]/90 border border-white/[0.08] rounded-2xl rounded-tl-xs px-4 py-3 text-slate-400 text-xs flex items-center gap-2.5 shadow-md">
-                      <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                      <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
+                    <div className="neo-card rounded-2xl rounded-tl-xs px-4 py-3 text-slate-400 text-xs flex items-center gap-2">
+                      <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                      <span className="w-2 h-2 bg-slate-400 rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
+                      <span className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
                     </div>
-                  </motion.div>
+                  </div>
                 )}
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* Quick Actions Bar */}
+              <div className="px-4 sm:px-5 py-2.5 border-t border-white/[0.04] bg-[#10121a] flex gap-2 overflow-x-auto scrollbar-none">
+                {QUICK_ACTIONS.map((action, idx) => {
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => executePrompt(action.prompt)}
+                      disabled={isLoading}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg neo-btn text-[11px] text-slate-300 hover:text-white transition-all disabled:opacity-50"
+                    >
+                      <Icon size={12} className="text-amber-400" />
+                      <span>{action.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               {/* Bottom Input Area */}
-              <div className="p-4 sm:p-5 border-t border-white/10 bg-[#08090e]">
+              <div className="p-4 sm:p-5 border-t border-white/[0.04] bg-[#10121a]">
                 <form onSubmit={handleSubmit} className="flex gap-3 items-end">
                   <div className="flex-1 relative">
                     <textarea
@@ -437,8 +535,8 @@ export function AIChatDrawer() {
                           handleSubmit(e);
                         }
                       }}
-                      placeholder="Ask anything or log your session..."
-                      className="w-full bg-[#12141f] border border-white/10 rounded-xl px-4 py-3 text-xs sm:text-[13px] text-white placeholder:text-slate-500 outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all resize-none min-h-[46px] max-h-[120px] scrollbar-thin font-sans"
+                      placeholder="Ask any question or update your tracker..."
+                      className="w-full neo-inset px-4 py-3 text-xs sm:text-[13px] text-white placeholder:text-slate-500 outline-none resize-none min-h-[46px] max-h-[120px] scrollbar-thin font-sans"
                       disabled={isLoading}
                       rows={1}
                     />
@@ -446,15 +544,15 @@ export function AIChatDrawer() {
                   <button
                     type="submit"
                     disabled={isLoading || !input.trim()}
-                    className="h-[46px] w-[46px] rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 flex items-center justify-center font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-[0_0_18px_rgba(0,212,255,0.4)] transition-all shrink-0 active:scale-95"
+                    className="h-[46px] w-[46px] rounded-xl neo-btn-primary flex items-center justify-center font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all shrink-0 active:scale-95 text-white"
                     title="Send message"
                   >
-                    <Send size={16} className="text-slate-950" />
+                    <Send size={16} />
                   </button>
                 </form>
                 <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 px-1 font-mono">
                   <span>Enter to send, Shift+Enter for new line</span>
-                  <span>Markdown & Code Supported</span>
+                  <span>Markdown, Code & Live Sync Supported</span>
                 </div>
               </div>
             </motion.div>
