@@ -2,79 +2,91 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AppData } from '@/lib/types';
 
-const systemPrompt = `You are Momentum AI — an exceptionally smart, warm, proactive coding mentor and full-stack engineering assistant for Aman's "Momentum" Developer Tracker.
+const systemPrompt = `You are Momentum AI — an exceptionally smart, helpful, proactive coding mentor and engineering copilot for Aman's "Momentum" Developer Tracker monolith.
 
 ### ABOUT AMAN & MOMENTUM:
 - **Profile**: Aman is a Computer Science Engineering student (3rd Semester) mastering Data Structures & Algorithms (Striver's A2Z Sheet in C++) and Backend Engineering (Node.js, Express, MongoDB, PostgreSQL, REST APIs, System Design).
-- **Primary Goal**: Solve and master 190+ high-quality DSA problems by the target date, while building production-grade backend projects.
-- **Marking & Rating Guidelines (1 to 10)**:
-  - **College Days (Mon–Fri)**:
-    • 10/10 — 1+ DSA problem solved + backend topic covered & implemented
-    • 9/10  — 1 solid DSA problem or good backend progress
-    • 8/10  — Revision only or light session
-    • 7/10  — Minimal effort / below expectations
-  - **Weekend Days (Sat–Sun)**:
-    • 10/10 — 2+ DSA problems + deep backend development
-    • 9/10  — 1–2 DSA + backend progress
-    • 8/10  — 1 DSA or backend only
-    • 7/10  — Light session
-  - **Freeze / Rest Days**: 2 freeze days allowed per month (recorded with null rating / ice icon).
+- **Target Goal**: Master 190+ DSA problems by the target deadline, maintain top consistency, and build production backend systems.
+- **Rating Guidelines (1–10)**:
+  - 10/10: 1+ DSA problem solved + solid backend implementation
+  - 9/10: 1 solid DSA problem or good backend progress
+  - 8/10: Revision session
+  - 7/10: Minimal effort
+  - Freeze days: Recorded as null rating (ice icon).
 
-### YOUR ROLE & BEHAVIOR:
-1. **Natural AI Conversation**:
-   - Act as a world-class AI peer and senior mentor (like Claude or ChatGPT).
-   - Talk naturally, intelligently, and empathetically. Answer ANY question: explain complex algorithms (Sliding Window, Binary Search, Trees, Dynamic Programming, Graphs), write clean code in C++/JS/TS, debug backend APIs, explain database design, discuss CS fundamentals (OS, DBMS, CN), plan schedules, or chat casually.
-   - Use clean Markdown formatting with clear headings, code blocks with language tags, bullet points, and math where appropriate.
+### CRITICAL DIRECTIVE: UNIVERSAL STATE MUTATIONS
+Whenever the user asks or implies ANY changes to their tracker:
+- Marking DSA problems/topics as done, partial, or pending
+- Changing problem confidence ratings (1–10)
+- Logging daily study sessions (date, day, hours, rating, mood, topics)
+- Editing or deleting existing day logs
+- Creating or removing weeks
+- Changing target problem count (e.g., targetGoal: 200) or target deadline date
+- Updating Backend Roadmap phases (status, week, label, topics, projects)
+- Updating Academics exam scores (marks obtained, max marks, subject)
+- Modifying College Timetable & Schedule slots (commute, DSA slot, backend slot)
 
-2. **Real-time Tracker Integration & Data Mutations**:
-   - You have full live access to Aman's tracker state (DSA sheet progress, weekly logs, academic marks, backend roadmap, schedule, overview targets).
-   - When the user asks you to log a session, mark problems done/revisit/pending, adjust ratings/hours, change goals, edit dates, update backend roadmap, record exam marks, or delete logs, you MUST evaluate the request, formulate a natural reply, and append a \`\`\`json stateMutations block at the very end.
-   - **If the user is just asking questions, chatting, debugging, or seeking explanations without modifying data, DO NOT include the json block.**
+YOU MUST ALWAYS APPEND A VALID \`\`\`json stateMutations\`\`\` CODE BLOCK AT THE VERY END OF YOUR RESPONSE.
 
-### DATA MUTATION SCHEMA:
-When modifying data, append this JSON block at the end of your response:
-
+### STATE MUTATION JSON SCHEMA:
 \`\`\`json
 {
   "stateMutations": {
-    "addDayLog": {
-      "date": "Aug 10",
-      "day": "Mon",
-      "topic": "DSA: Two Sum ✓ · Backend: MongoDB CRUD",
-      "rating": 9,
-      "mood": 4,
-      "hours": 3
-    },
-    "updateDayLog": [
-      { "date": "Aug 10", "rating": 10, "hours": 4, "topic": "Updated topic" }
+    "addDayLog": [
+      {
+        "date": "Aug 15",
+        "day": "Sat",
+        "topic": "DSA: Sliding Window ✓ · Backend: JWT Auth",
+        "rating": 9.5,
+        "mood": 5,
+        "hours": 3.5
+      }
     ],
-    "deleteDayLog": ["Aug 5"],
+    "updateDayLog": [
+      { "date": "Aug 15", "rating": 10, "hours": 4, "topic": "Updated topic summary" }
+    ],
+    "deleteDayLog": ["Aug 10"],
     "addNewWeek": {
       "label": "Week 16",
-      "range": "Aug 10 – Aug 16"
+      "range": "Aug 15 – Aug 21"
     },
     "updateProgress": [
       { "name": "Two Sum", "status": "done", "confidence": 9 },
-      { "name": "3 Sum", "status": "partial", "confidence": 6 }
+      { "name": "Kadane's Algorithm", "status": "done", "confidence": 10 },
+      { "name": "Trapping Rain Water", "status": "partial", "confidence": 6 }
     ],
     "updateBackend": [
-      { "id": "wk3", "status": "done" }
+      { "id": "wk3", "status": "done" },
+      { "week": "Week 4", "status": "partial" }
     ],
+    "addBackendPhase": {
+      "id": "wk7",
+      "week": "Week 7",
+      "label": "Docker, Kubernetes & CI/CD",
+      "period": "Aug 20 – Sep 05",
+      "status": "pending",
+      "topics": ["Containerization", "Multi-stage builds", "K8s Pods", "GitHub Actions"]
+    },
     "updateAcademics": {
-      "updateMarks": [{ "examLabel": "2nd Mid-Term", "subject": "DBMS", "obtained": 28 }]
+      "maxMarks": 30,
+      "updateMarks": [
+        { "examLabel": "2nd Mid-Term", "subject": "DBMS", "obtained": 29 },
+        { "examLabel": "2nd Mid-Term", "subject": "Data Structures", "obtained": 30 }
+      ]
     },
     "updateSchedule": [
-      { "day": "Monday", "dsaSlot": "7:00–9:00 PM (2 probs)" }
+      { "day": "Monday", "dsaSlot": "7:00–9:30 PM (2 Probs)", "backendSlot": "10:00–11:30 PM" }
     ],
     "updateOverview": {
       "targetGoal": 190,
-      "targetDate": "2026-08-15",
+      "targetDate": "2026-08-30",
       "freezesAllowed": 2
     }
   }
 }
 \`\`\`
-Note: All mutation fields are optional. Only include the fields that need updating based on user intent.`;
+
+Note: Include ONLY the fields you wish to mutate. If the user is just asking questions without requesting any tracker update, answer naturally and do not include the JSON block.`;
 
 const GEMINI_MODELS = [
   "gemini-3.5-flash",
@@ -93,7 +105,6 @@ async function callGemini(
 ): Promise<string> {
   const genAI = new GoogleGenerativeAI(apiKey);
   
-  // Put preferred model first if valid
   const modelQueue = preferredModel && GEMINI_MODELS.includes(preferredModel)
     ? [preferredModel, ...GEMINI_MODELS.filter(m => m !== preferredModel)]
     : GEMINI_MODELS;
@@ -110,7 +121,6 @@ async function callGemini(
       if (text && text.trim().length > 0) return text;
     } catch (e: any) {
       lastError = e;
-      // Continue to next model on 429 quota or 404 model errors
       continue;
     }
   }
@@ -119,6 +129,10 @@ async function callGemini(
 
 function normalizeId(str: string): string {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function cleanString(str: string): string {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 function recalculateWeekAverage(days: any[]): number {
@@ -211,7 +225,6 @@ export function applyStateMutations(currentData: AppData, mutations: any): AppDa
       const targetDate = item.date.trim().toLowerCase();
       let found = false;
 
-      // Check if day already exists in any week and update it
       for (const week of updatedData.weeks) {
         const dayIdx = week.days.findIndex(d => d.date.trim().toLowerCase() === targetDate);
         if (dayIdx !== -1) {
@@ -228,7 +241,6 @@ export function applyStateMutations(currentData: AppData, mutations: any): AppDa
         }
       }
 
-      // If not found, add to latest week (top of days)
       if (!found && updatedData.weeks[0]) {
         const newDay = {
           date: item.date,
@@ -282,38 +294,43 @@ export function applyStateMutations(currentData: AppData, mutations: any): AppDa
     });
   }
 
-  // 7. Universal Topic & DSA Progress Mutations
+  // 7. Universal Smart Topic & DSA Progress Mutations (Fuzzy search supported)
   const topicUpdates = updateProgress || updateTopic || markTopicsDone;
   if (topicUpdates && updatedData.progress) {
     const items = Array.isArray(topicUpdates) ? topicUpdates : [topicUpdates];
     
     items.forEach((item: any) => {
       if (!item) return;
-      const searchTarget = (item.name || item.topicName || item.topicId || item.id || "").trim();
-      if (!searchTarget) return;
+      const rawTarget = (item.name || item.topicName || item.topicId || item.id || "").trim();
+      if (!rawTarget) return;
 
-      const targetNorm = normalizeId(searchTarget);
-      const targetLower = searchTarget.toLowerCase();
+      const targetNorm = normalizeId(rawTarget);
+      const targetClean = cleanString(rawTarget);
+      const targetLower = rawTarget.toLowerCase();
       let matched = false;
 
-      // Search across all progress sections
+      // Scan all sections and topics
       for (const [sectionKey, section] of Object.entries(updatedData.progress)) {
         if (!section || !Array.isArray(section.topics)) continue;
 
         for (const topic of section.topics) {
           const tNorm = normalizeId(topic.id || topic.name);
-          const tNameLower = topic.name.toLowerCase();
+          const tClean = cleanString(topic.name);
+          const tLower = topic.name.toLowerCase();
 
           if (
             tNorm === targetNorm ||
-            tNameLower === targetLower ||
-            tNameLower.includes(targetLower) ||
-            targetLower.includes(tNameLower)
+            tClean === targetClean ||
+            tLower === targetLower ||
+            tLower.includes(targetLower) ||
+            targetLower.includes(tLower) ||
+            tClean.includes(targetClean) ||
+            targetClean.includes(tClean)
           ) {
             if (item.status) topic.status = item.status;
             if (item.confidence !== undefined) topic.confidence = Number(item.confidence);
             else if (item.status === 'done' && (topic.confidence === 0 || !topic.confidence)) {
-              topic.confidence = 8;
+              topic.confidence = 9;
             }
             matched = true;
             break;
@@ -326,9 +343,9 @@ export function applyStateMutations(currentData: AppData, mutations: any): AppDa
       if (!matched && item.sectionKey && updatedData.progress[item.sectionKey]) {
         const newTopic = {
           id: targetNorm,
-          name: searchTarget,
+          name: rawTarget,
           status: item.status || 'done',
-          confidence: item.confidence !== undefined ? Number(item.confidence) : 8,
+          confidence: item.confidence !== undefined ? Number(item.confidence) : 9,
           difficulty: item.difficulty || 'medium'
         };
         updatedData.progress[item.sectionKey].topics.push(newTopic);
@@ -389,10 +406,14 @@ export function applyStateMutations(currentData: AppData, mutations: any): AppDa
       updateAcademics.updateMarks.forEach((m: any) => {
         const exam = updatedData.academics.exams.find(e => 
           (m.examLabel && e.label.toLowerCase().includes(m.examLabel.toLowerCase())) ||
-          (m.examIndex !== undefined && updatedData.academics.exams[m.examIndex] === e)
+          (m.examIndex !== undefined && updatedData.academics.exams[m.examIndex] === e) ||
+          true // fallback to latest exam
         );
         if (exam) {
-          const markObj = exam.marks.find(subj => subj.subject.toLowerCase() === m.subject.toLowerCase());
+          const markObj = exam.marks.find(subj => 
+            subj.subject.toLowerCase() === m.subject.toLowerCase() ||
+            subj.subject.toLowerCase().includes(m.subject.toLowerCase())
+          );
           if (markObj) {
             markObj.obtained = Number(m.obtained);
           } else {
@@ -458,12 +479,12 @@ export async function POST(req: Request) {
       });
     }
 
-    // Build multi-turn conversational context
+    // Build conversation context
     let conversationHistoryText = "";
     if (Array.isArray(messages) && messages.length > 0) {
       conversationHistoryText = messages
         .filter(m => m.role !== 'system')
-        .slice(-12) // Keep last 12 turns for sharp context
+        .slice(-10)
         .map(m => `${m.role === 'user' ? 'USER' : 'ASSISTANT'}: ${m.content}`)
         .join("\n\n");
     }

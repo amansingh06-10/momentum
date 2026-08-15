@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { AppData, AppStats, Topic, ActiveProblemInfo } from './types';
 import { defaultData } from './defaultData';
+import { supabase, isSupabaseConfigured, fetchStateFromSupabase, saveStateToSupabase } from './supabaseClient';
 
 interface DataContextType {
   data: AppData;
@@ -23,6 +24,8 @@ interface DataContextType {
   isTimerOpen: boolean;
   setIsTimerOpen: (val: boolean) => void;
   logStudyHours: (hours: number, topicDesc?: string, rating?: number) => void;
+  syncStatus: 'synced' | 'syncing' | 'local' | 'error';
+  isCloudConnected: boolean;
 }
 
 const STORAGE_KEY = "MOMENTUM_APP_DATA_V1";
@@ -70,19 +73,52 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [activeProblem, setActiveProblem] = useState<ActiveProblemInfo | null>(null);
   const [isTimerOpen, setIsTimerOpen] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'local' | 'error'>(
+    isSupabaseConfigured ? 'syncing' : 'local'
+  );
 
+  // Initial Load from Cloud (Supabase) or LocalStorage
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const merged = mergeAppData(parsed, defaultData);
-        setData(merged);
+    async function initializeState() {
+      let loadedFromCloud = false;
+
+      // 1. Try loading from Supabase if configured
+      if (isSupabaseConfigured) {
+        setSyncStatus('syncing');
+        try {
+          const cloudData = await fetchStateFromSupabase();
+          if (cloudData) {
+            const merged = mergeAppData(cloudData, defaultData);
+            setData(merged);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            setSyncStatus('synced');
+            loadedFromCloud = true;
+          }
+        } catch (e) {
+          console.warn("Supabase initial load failed, falling back to local storage:", e);
+          setSyncStatus('error');
+        }
       }
-    } catch (e) {
-      console.warn("Could not load from localStorage, using default data.", e);
+
+      // 2. Fallback to LocalStorage
+      if (!loadedFromCloud) {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            const merged = mergeAppData(parsed, defaultData);
+            setData(merged);
+          }
+        } catch (e) {
+          console.warn("Could not load from localStorage, using default data.", e);
+        }
+        if (!isSupabaseConfigured) setSyncStatus('local');
+      }
+
+      setIsLoaded(true);
     }
-    setIsLoaded(true);
+
+    initializeState();
 
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -104,13 +140,28 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const updateData = (newData: AppData) => {
+  // Persist function that writes to localStorage and async syncs to Supabase
+  const updateData = async (newData: AppData) => {
     setData(newData);
+    
+    // 1. Instant local persistence
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
       } catch (e) {
         console.error("Failed to save to localStorage:", e);
+      }
+    }
+
+    // 2. Background Cloud Sync to Supabase
+    if (isSupabaseConfigured) {
+      setSyncStatus('syncing');
+      try {
+        const success = await saveStateToSupabase(newData);
+        setSyncStatus(success ? 'synced' : 'error');
+      } catch (e) {
+        console.error("Supabase sync failed:", e);
+        setSyncStatus('error');
       }
     }
   };
@@ -311,7 +362,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setActiveProblem,
         isTimerOpen,
         setIsTimerOpen,
-        logStudyHours
+        logStudyHours,
+        syncStatus,
+        isCloudConnected: isSupabaseConfigured
       }}
     >
       {children}

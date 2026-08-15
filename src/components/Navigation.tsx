@@ -22,7 +22,11 @@ import {
   Flame,
   Zap,
   Plus,
-  Timer
+  Timer,
+  Cloud,
+  CloudCheck,
+  RefreshCw,
+  HardDrive
 } from "lucide-react";
 
 export function Navigation() {
@@ -34,7 +38,9 @@ export function Navigation() {
     setIsChatOpen,
     setIsDataModalOpen,
     setIsCommandPaletteOpen,
-    setIsTimerOpen
+    setIsTimerOpen,
+    syncStatus,
+    isCloudConnected
   } = useApp();
 
   const tabs = [
@@ -121,13 +127,48 @@ export function Navigation() {
             </div>
           </motion.div>
 
+          {/* Cloud Sync Status Indicator */}
+          <div
+            className="px-2.5 py-1.5 rounded-xl neo-inset font-mono text-[10px] flex items-center gap-1.5 cursor-pointer"
+            onClick={() => setIsDataModalOpen(true)}
+            title={
+              isCloudConnected
+                ? `Supabase Cloud Connected (${syncStatus})`
+                : "Local Storage Mode. Click Settings to connect Supabase or backup data."
+            }
+          >
+            {isCloudConnected ? (
+              syncStatus === 'syncing' ? (
+                <>
+                  <RefreshCw size={11} className="text-amber-400 animate-spin" />
+                  <span className="text-amber-300 hidden md:inline">Syncing...</span>
+                </>
+              ) : syncStatus === 'synced' ? (
+                <>
+                  <Cloud size={11} className="text-emerald-400" />
+                  <span className="text-emerald-300 hidden md:inline">Supabase</span>
+                </>
+              ) : (
+                <>
+                  <Cloud size={11} className="text-rose-400" />
+                  <span className="text-rose-300 hidden md:inline">Sync Error</span>
+                </>
+              )
+            ) : (
+              <>
+                <HardDrive size={11} className="text-slate-400" />
+                <span className="text-slate-400 hidden md:inline">Local 💾</span>
+              </>
+            )}
+          </div>
+
           {/* Raw JSON Data Settings */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsDataModalOpen(true)}
             className="p-2 text-slate-400 hover:text-white rounded-xl neo-btn"
-            title="State Editor & JSON Backup"
+            title="State Editor & Supabase Cloud Setup"
           >
             <Settings size={14} />
           </motion.button>
